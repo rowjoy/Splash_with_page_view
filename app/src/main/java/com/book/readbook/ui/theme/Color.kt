@@ -13,4 +13,6 @@ object  AppColors {
 
     val backgroundColor = Color(0xFFd5f8e4)
     val appFontColor = Color(0xFF5BE4A8)
+
+    val S_lineColor = Color(0xFF8CD6F7)
 }
