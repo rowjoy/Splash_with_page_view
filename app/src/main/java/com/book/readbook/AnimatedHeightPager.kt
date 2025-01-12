@@ -1,61 +1,146 @@
-package com.book.readbook
-
-import androidx.compose.material3.Text
-import androidx.compose.ui.text.style.LineHeightStyle
-
-
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.background
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.HorizontalPager
-import com.google.accompanist.pager.rememberPagerState
-
-
-
-
+import androidx.compose.ui.unit.sp
+import com.book.readbook.ui.theme.ReadBookTheme
+import com.google.accompanist.pager.*
+import kotlinx.coroutines.flow.collectLatest
+import kotlin.math.abs
+import com.book.readbook.R
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun AnimatedHeightPager() {
-    val pagerState = rememberPagerState() // State for pager
-    val pageCount = 2
+fun AnimatedHeightPager () {
+    val pagerState = rememberPagerState(initialPage = 0)
+    val baseHeight = 450.dp
+    var animatedHeight by remember { mutableStateOf(baseHeight) }
 
-    // Define page heights
-    val heights = listOf(200.dp, 300.dp)
+    // Observe offset changes
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.currentPageOffset }
+            .collectLatest { offset ->
+                val  heightChange = (100.dp * abs(offset + pagerState.currentPage))
+                animatedHeight = baseHeight + heightChange
+                println("Current Offset: $offset, Adjusted Height: $animatedHeight ")
+            }
+    }
 
-    // Animate the height based on the current page
-    val animatedHeight by animateDpAsState(
-        targetValue = heights[pagerState.currentPage], // Update the height dynamically
-        animationSpec = tween(durationMillis = 500) // Animation duration
-    )
+    Column (
+        modifier = Modifier.fillMaxSize()
+    ) {
+        Box (
+            modifier = Modifier
+                .fillMaxWidth()
+        ) { Image(
+                painter =  painterResource(id = R.drawable.background_images ),
+                contentDescription = "Back images",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(130.dp) // Adjust the height as needed
+                    .align(Alignment.TopStart)
+            )
+        }
+
+       Box(modifier = Modifier.fillMaxSize(),
+           contentAlignment = Alignment.TopCenter
+           ){
+            Column {
+                Image(
+                    painter = painterResource(id = R.drawable.app_logo),
+                    contentDescription = "App Logo",
+                    modifier = Modifier.size(150.dp)
+
+                )
+                Text(text = "Welcome back!",
+                     textAlign = TextAlign.Center,
+                     color = Color.Black,
+                     fontSize = 22.sp,
+
+
+                    )
+                Text(text = "Log in to existing LOGO account",
+                    textAlign = TextAlign.Center,
+                    color = Color.Gray,
+                    fontSize = 15.sp,)
+            }
+       }
+
+
+    }
+
+
+
+
 
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(animatedHeight)
-    ) {
+        modifier = Modifier.fillMaxSize(),
+         verticalArrangement = Arrangement.Bottom,
+        ) {
         HorizontalPager(
+            count = 2,
             state = pagerState,
-            count = pageCount,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxWidth()
         ) { page ->
-            Box(
+            Box (
                 modifier = Modifier
-                    .fillMaxSize()
-                    .background(if (page == 0) Color.Red else Color.Blue)
+                    .height(animatedHeight)
+                    .fillMaxWidth()
+                    .shadow(
+                        elevation = 0.dp,
+                        shape = RoundedCornerShape(
+                            topStart = if (page == 0) 16.dp else 0.dp, // Top-left corner
+                           // topEnd = 16.dp,  // Top-right corner
+//                            bottomStart = 0.dp, // Bottom-left corner (no rounding)
+//                            bottomEnd = 0.dp   // Bottom-right corner (no rounding)
+                        ),
+                        clip = false
+
+                    )
+
+                    .background(
+                        color = Color.Black,
+                        shape = RoundedCornerShape(
+                            topStart = if(page == 0) 16.dp else 0.dp,
+                           // topEnd = 16.dp
+                        )
+                        ),
             ) {
-                Text(
-                    text = "Page ${page + 1}",
-                    color = Color.White,
-                   // modifier = Modifier.align(LineHeightStyle.Alignment.Center)
-                )
+
             }
         }
     }
 }
+
+
+
+@ExperimentalPagerApi
+fun calculateCurrentPageOffsetFraction(pagerState: PagerState): Float {
+    return (pagerState.currentPage + pagerState.currentPageOffset).toFloat()
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewComposeAnimationHight (){
+   ReadBookTheme {
+       Surface {
+           AnimatedHeightPager ()
+       }
+   }
+}
+
