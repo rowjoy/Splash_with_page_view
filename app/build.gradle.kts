@@ -71,6 +71,8 @@ dependencies {
     implementation ("androidx.navigation:navigation-compose:2.8.5")
     implementation ("com.google.accompanist:accompanist-pager:0.28.0")
     implementation ("com.google.accompanist:accompanist-systemuicontroller:0.36.0")
+    implementation ("com.google.accompanist:accompanist-navigation-animation:0.32.0")
+
 
 
 }
